@@ -1,15 +1,15 @@
 export const state = () => ({
     controlValue: {
         showLayout: false,
-        floatLayout: true,
+        floatLayout: false,
         enableDownload: true,
-        previewModal: true,
-        paginateElementsByHeight: 1100,
+        previewModal: false,
+        paginateElementsByHeight: 1000,
         manualPagination: false,
-        filename: 'Hee Hee',
+        filename: 'newPdf',
         pdfQuality: 2,
         pdfFormat: 'a4',
         pdfOrientation: 'portrait',
-        pdfContentWidth: '800px'
+        pdfContentWidth: '800'
     }
 })

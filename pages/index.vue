@@ -1,253 +1,200 @@
 <template>
-  <div class='main'>
-    <vue-html2pdf
-      :show-layout="controlValue.showLayout"
-      :float-layout="controlValue.floatLayout"
-      :enable-download="controlValue.enableDownload"
-      :preview-modal="controlValue.previewModal"
-      :filename="controlValue.filename"
-      :paginate-elements-by-height="controlValue.paginateElementsByHeight"
-      :pdf-quality="controlValue.pdfQuality"
-      :pdf-format="controlValue.pdfFormat"
-      :pdf-orientation="controlValue.pdfOrientation"
-      :pdf-content-width="controlValue.pdfContentWidth"
-      :manual-pagination="controlValue.manualPagination"
-      :html-to-pdf-options="htmlToPdfOptions"
-      @progress="onProgress($event)"
-      @startPagination="startPagination()"
-      @hasPaginated="hasPaginated()"
-      @beforeDownload="beforeDownload($event)"
-      @hasDownloaded="hasDownloaded($event)"
-      ref="html2Pdf"
-    >
-      <pdf-content @domRendered="domRendered()" slot="pdf-content" />
-    </vue-html2pdf>
+<div>
+<v-form @submit.prevent='onSubmit'>
+    <v-container class='subtitle-1 font-weight-bold'>
+        <div>REPAIR ORDER FORM</div>
+        <hr>
+    <br>
+    <div style='margin-left: 15px;'>
+        <v-text-field v-model='name' class='caption' single-line dense hide-details="true" placeholder="First and Last Name"></v-text-field>
+        <v-text-field v-model='phone' class='caption' single-line dense hide-details="true" placeholder="Phone Number"></v-text-field>
+        <v-text-field v-model='email' class='caption' single-line dense hide-details="true" placeholder="Email address"></v-text-field>
+    </div>
+    </v-container>
+    <br>
 
-    <section class="title-container">
-      <h1 class="title-header">Vue HTML2PDF</h1>
+
+
+    <section style='margin-left: 15px;'>
+
+    <v-container class='subtitle-1 font-weight-bold'>
+        <div>DEVICE DETAILS</div>
+        <hr>
+    
+        <v-chip-group v-model="select1" active-class="teal white--text"  >
+            <v-chip v-for="size in ManufacturerData" :key="size"  :value="size" small>  {{ size }} </v-chip>
+        </v-chip-group>
+
+        <div v-if="select1">
+            <v-chip-group v-model="select2" active-class="teal white--text" >
+                <v-chip v-for="size in ModelData" :key="size" :value="size" small>  {{ size }} </v-chip>
+            </v-chip-group>
+        </div>
+
+        <div v-if="select2">
+            <v-chip-group v-model="select3" multiple active-class="teal white--text" >
+                <v-chip v-for="size in ProblemData" :key="size" :value="size" small> {{ size }} </v-chip>
+            </v-chip-group>
+        </div>
+    </v-container>
     </section>
 
 
-    <controls-container :progress="progress" @generateReport="downloadPdf()" />
-  </div>
+    <section>
+        <v-container class='subtitle-1 font-weight-bold'>
+            <div>PRICE</div>
+            <hr>
+        <div style='margin-left: 15px;'>
+            ${{ValueData}}
+        </div>
+        </v-container>
+        <br>
+    </section>
+
+    <v-container>
+        <v-btn type='submit' small color='primary' outlined>save</v-btn>
+    </v-container>
+
+    <section>
+        <div v-if='repairData?repairData.length>0:""'>
+            <v-container>
+
+                <v-list two-line>
+                    <template v-for='(item, index) in repairData' >
+                        <v-list-item :key="index" >
+
+                        <v-list-item-content>
+                            <v-list-item-title>NAME: {{item.name }}, EMAIL: {{item.email}}</v-list-item-title>
+                            <v-list-item-subtitle>DEVICE: {{item.select1}} - {{item.select2}} | ${{item.numberList}}</v-list-item-subtitle>
+                        </v-list-item-content>
+                        </v-list-item>
+                    </template>
+                    </v-list>
+
+                    <v-btn to='/html2pdf'>PDF FILE</v-btn>
+            
+            </v-container>
+
+        </div>
+    </section>
+
+</v-form>
+</div>
+
 </template>
 
+
 <script>
-import PdfContent from "@/components/PdfContent";
-import ControlsContainer from "@/components/ControlsContainer";
-import VueHtml2pdf from 'vue-html2pdf'
-
 export default {
-  name: "app",
-  components: {
-    VueHtml2pdf,
-    PdfContent,
-    ControlsContainer,
-  },
-
-  data() {
-    return {
-      contentRendered: false,
-      progress: 0,
-      generatingPdf: false,
-      pdfDownloaded: false,
-    };
-  },
-
-  computed: {
-    controlValue(){
-      return this.$store.state.pdfStore.controlValue
-    },
-    // ...mapFields(["controlValue"]),
-
-    htmlToPdfOptions() {
-      return {
-        margin: 0,
-
-        filename: "hee hee.pdf",
-
-        image: {
-          type: "jpeg",
-          quality: 0.98,
+data (){
+    return{
+    select1: '',
+    select2: '',
+    select3: '',
+    numberList: 0,
+    name: '',
+    phone: '',
+    email: '',
+    Manufacturer: {
+        apple: {
+            iphone6: {
+                battery: 59,
+                screen: 69,
+            },
+            iphone7: {
+                battery: 39,
+                dock: 48,
+            }
         },
-
-        enableLinks: true,
-
-        html2canvas: {
-          scale: this.controlValue.pdfQuality,
-          useCORS: true,
+        samsung: {
+            galaxys8: {
+                battery: 49,
+                screen: 120,
+            },
+            galaxys10: {
+                battery: 133,
+                screen: 422,
+            
+            }
         },
-
-        jsPDF: {
-          unit: "in",
-          format: this.controlValue.pdfFormat,
-          orientation: this.controlValue.pdfOrientation,
+        HTC: {
+        htc10: {
+            battery: 380,
+            dockconnector: 280,
+            screen: 450
         },
-      };
+        htc11: {
+            screen: 310,
+            battery: 210,
+            dock: 110,
+            power: 240,
+            sound: 110,
+            home: 230,
+            wifi: 110,
+            gps: 100
+        }
+        }
+    }
+    
+    }},
+    methods:{
+        onSubmit(){
+            this.$store.commit('repairForm/ADD_REPAIR_DATA', {
+                name: this.name,
+                phone: this.phone,
+                email: this.email,
+                select1: this.select1,
+                select2: this.select2,
+                select3: this.select3,
+                numberList: this.numberList,
+            })
+        }
     },
-  },
-
-  methods: {
-    async downloadPdf() {
-      if (!(await this.validateControlValue())) return;
-
-      this.$refs.html2Pdf.generatePdf();
+    computed: {
+        ManufacturerData(){
+            return Object.keys(this.Manufacturer) 
+        }, 
+        ModelData(){
+            if(this.select1===''){
+                return null
+            }else{
+                return Object.keys(this.Manufacturer[this.select1])
+            }
+        },
+        ProblemData(){
+            if(this.select2===''){
+                return null
+            }else{
+                    return Object.keys(this.Manufacturer[this.select1][this.select2])
+            }
+        },
+        ValueData(){
+            if(this.select3===''){
+                return null
+            }else{
+                this.numberList=0
+                for(var i=0; i<this.select3.length;i++){
+                this.numberList += Number(this.Manufacturer[this.select1][this.select2][this.select3[i]])
+                }
+                return this.numberList
+                }
+        },
+        repairData(){
+            const data = this.$store.state.repairForm.repairData
+            // if(!data || data===undefined || Object.entries(data).length===0) return
+            console.log('repairData', data)
+            return data
+        }
     },
-
-    validateControlValue() {
-      if (this.controlValue.pdfQuality > 2) {
-        alert("pdf-quality value should only be 0 - 2");
-        this.controlValue.pdfQuality = 2;
-
-        return false;
-      }
-
-      if (!this.controlValue.paginateElementsByHeight) {
-        alert("paginate-elements-by-height value cannot be empty");
-        this.controlValue.paginateElementsByHeight = 1400;
-
-        return false;
-      }
-
-      const paperSizes = [
-        "a0",
-        "a1",
-        "a2",
-        "a3",
-        "a4",
-        "letter",
-        "legal",
-        "a5",
-        "a6",
-        "a7",
-        "a8",
-        "a9",
-        "a10",
-      ];
-
-      if (!paperSizes.includes(this.controlValue.pdfFormat)) {
-        alert(`pdf-format value should only be ${paperSizes}`);
-        this.controlValue.pdfFormat = "a4";
-
-        return false;
-      }
-
-      if (!this.controlValue.pdfOrientation) {
-        alert("pdf-orientation value cannot be empty");
-        this.controlValue.pdfOrientation = "portrait";
-
-        return false;
-      }
-
-      if (!this.controlValue.pdfContentWidth) {
-        alert("pdf-content-width value cannot be empty");
-        this.controlValue.pdfContentWidth = "800px";
-
-        return false;
-      }
-
-      return true;
-    },
-
-    onProgress(progress) {
-      this.progress = progress;
-      console.log(`PDF generation progress: ${progress}%`)
-    },
-
-    startPagination() {
-      console.log(`PDF has started pagination`)
-    },
-
-    hasPaginated () {
-      console.log(`PDF has been paginated`)
-    },
-
-    async beforeDownload ({ html2pdf, options, pdfContent }) {
-      console.log(`On Before PDF Generation`)
-      // await html2pdf().set(options).from(pdfContent).toPdf().get('pdf').then((pdf) => {
-			// 	const totalPages = pdf.internal.getNumberOfPages()
-			// 	for (let i = 1; i <= totalPages; i++) {
-			// 		pdf.setPage(i)
-			// 		pdf.setFontSize(10)
-			// 		pdf.setTextColor(150)
-			// 		pdf.text('Page ' + i + ' of ' + totalPages, (pdf.internal.pageSize.getWidth() * 0.88), (pdf.internal.pageSize.getHeight() - 0.3))
-			// 	} 
-			// }).save()
-    },
-
-    hasDownloaded (blobPdf) {
-      console.log(`PDF has downloaded yehey`)
-      this.pdfDownloaded = true
-      console.log(blobPdf)
-    },
-
-    domRendered() {
-      console.log("Dom Has Rendered");
-      this.contentRendered = true;
-    },
-
-    onBlobGenerate(blob) {
-      console.log(blob);
-    },
-  },
-
-
-};
+    watch: {
+        select1(){
+        console.log(this.select1)
+        this.select2=''
+        this.select3=''
+        }
+    }
+}
 </script>
 
-<style lang="scss" scoped>
-body {
-  width: 100%;
-  padding: 0;
-  margin: 0;
-}
-.main {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #141e30; /* fallback for old browsers */
-  background: -webkit-linear-gradient(
-    to bottom,
-    #243b55,
-    #141e30
-  ); /* Chrome 10-25, Safari 5.1-6 */
-  background: linear-gradient(
-    to bottom,
-    #243b55,
-    #141e30
-  ); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-  flex-direction: column;
-  overflow: hidden;
-
-  .title-container {
-    min-height: 100vh;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0;
-  }
-
-  .title-header {
-    color: #fff;
-    padding: 25px 50px;
-    border: 5px solid #fff;
-    border-radius: 5px;
-    opacity: 0;
-
-    animation-name: animate-fade-in-top;
-
-    animation-fill-mode: forwards;
-    animation-timing-function: ease-in-out;
-  }
-}
-
-
+<style>
 </style>

@@ -1,11 +1,15 @@
 <template>
   <section class="pdf-content">
-      asdf
+        <invoice />
   </section>
 </template>
 
 <script>
+import invoice from '../components/invoice'
 export default {
+  components:{
+    invoice
+  },
   data() {
     return {
     }
@@ -18,13 +22,13 @@ export default {
       }, 1000);
     });
   },
-};
+}
 </script>
 
 <style lang="scss" scoped>
 .pdf-content {
   width: 100%;
   background: #fff;
-
+  padding: 35px 5px 5px 10px;
 }
 </style>
